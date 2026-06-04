@@ -1,0 +1,19 @@
+# Manipulation et analyse de données
+pandas
+numpy
+
+# Environnement de développement
+jupyter
+
+# Visualisation de données (EDA)
+matplotlib
+seaborn
+
+# Modélisation prédictive (Machine Learning)
+scikit-learn
+
+# Interprétabilité des modèles (Obligatoire)
+shap
+
+# Création du Dashboard interactif
+streamlit
