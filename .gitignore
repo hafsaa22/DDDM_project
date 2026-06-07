@@ -1,4 +1,5 @@
 *.csv
+*.pkl
 *.xlsx
 *.parquet
 data/

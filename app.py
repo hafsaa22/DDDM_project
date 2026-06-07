@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import joblib
 
 st.set_page_config(page_title="Dashboard DDDM - Logistique", layout="wide", page_icon="🍔")
 
@@ -93,28 +94,70 @@ elif vue == "🛵 4. RH (Flotte)":
 # VUE 5 : SIMULATEUR
 elif vue == "🤖 5. Simulateur IA":
     st.title("Simulateur d'Aide à la Décision")
-    st.markdown("Saisissez les paramètres de la course pour évaluer le risque de retard avant l'attribution du livreur.")
-    
-    with st.form("simulateur_form"):
-        col1, col2, col3 = st.columns(3)
-        distance = col1.slider("Distance estimée (km)", 1.0, 25.0, 5.0)
-        vehicule = col2.selectbox("Véhicule disponible", ["motorcycle", "scooter", "bicycle"])
-        meteo = col3.selectbox("Météo actuelle", ["Clear", "Rain", "Snow"])
-        
-        submit = st.form_submit_button("Évaluer le risque avec l'IA")
-        
-        if submit:
-            risque = 20 
-            if meteo in ["Rain", "Snow"]: risque += 40
-            if vehicule == "bicycle" and distance > 8: risque += 30
-            if distance > 15: risque += 20
+    st.markdown("Saisissez les paramètres pour évaluer le risque avec notre modèle Machine Learning.")
+
+    # Chargement du modèle et des colonnes (en cache pour la performance)
+    @st.cache_resource
+    def charger_modele():
+        modele = joblib.load('modele_livraison.pkl')
+        colonnes = joblib.load('colonnes_modele.pkl')
+        return modele, colonnes
+
+    try:
+        modele, colonnes_entrainement = charger_modele()
+        modele_charge = True
+    except FileNotFoundError:
+        st.error("⚠️ Fichiers du modèle introuvables. Avez-vous bien exécuté la dernière cellule du Notebook ?")
+        modele_charge = False
+
+    if modele_charge:
+        with st.form("simulateur_form"):
+            st.markdown("#### Paramètres de la course")
+            col1, col2, col3 = st.columns(3)
+            distance = col1.slider("Distance (km)", 1.0, 25.0, 5.0)
+            vehicule = col2.selectbox("Véhicule", ["motorcycle", "scooter", "bicycle"])
+            meteo = col3.selectbox("Météo", ["Clear", "Rain", "Snow", "Fog", "Windy"]) # Ajuste selon tes vraies données
             
-            risque = min(100, risque) 
-            
-            st.markdown("### Résultat de l'analyse")
-            if risque > 50:
-                st.error(f"⚠️ **Alerte Risque Élevé : {risque}% de probabilité de retard.**")
-                st.warning("💡 **Action recommandée :** Réaffecter cette commande à une moto prioritaire ou prévenir le client d'un délai allongé.")
-            else:
-                st.success(f"✅ **Risque Faible : {risque}% de probabilité de retard.**")
-                st.info("💡 **Action recommandée :** Attribution standard (vélo/scooter) validée.")
+            st.markdown("#### Profil du Livreur")
+            col4, col5 = st.columns(2)
+            age = col4.slider("Âge du livreur", 18, 65, 30)
+            rating = col5.slider("Note du livreur", 1.0, 5.0, 4.5, step=0.1)
+
+            submit = st.form_submit_button("Évaluer le risque avec l'IA")
+
+            if submit:
+                # 1. Sécurité : on initialise tout à 0
+                input_dict = {col: 0 for col in colonnes_entrainement}
+                
+                # 2. Variables numériques (les curseurs)
+                if 'Distance_km' in input_dict:
+                    input_dict['Distance_km'] = distance
+                # Ajuste les noms ici ('Delivery_person_Age', etc.) selon les vrais noms dans ton DataFrame
+                if 'Delivery_person_Age' in input_dict:
+                    input_dict['Delivery_person_Age'] = age
+                if 'Delivery_person_Ratings' in input_dict:
+                    input_dict['Delivery_person_Ratings'] = rating
+
+                # 3. Variables catégorielles (One-Hot Encoding)
+                col_vehicule = f"Type_of_vehicle_{vehicule}"
+                if col_vehicule in input_dict:
+                    input_dict[col_vehicule] = 1
+                    
+                col_meteo = f"Precip Type_{meteo}"
+                if col_meteo in input_dict:
+                    input_dict[col_meteo] = 1
+
+                # 4. Conversion et Prédiction
+                input_df = pd.DataFrame([input_dict])
+                proba_retard = modele.predict_proba(input_df)[0][1]
+                risque = round(proba_retard * 100, 1)
+
+                # 5. Affichage du résultat
+                st.markdown("### Résultat de l'analyse IA")
+                if risque > 60:
+                    st.error(f"🚨 **Alerte Risque Élevé : {risque}% de probabilité de retard.**")
+                    st.markdown("*Recommandation : Assigner un livreur mieux noté ou utiliser un véhicule motorisé.*")
+                elif risque > 30:
+                    st.warning(f"⚠️ **Risque Modéré : {risque}% de probabilité de retard.**")
+                else:
+                    st.success(f"✅ **Risque Faible : {risque}% de probabilité de retard.**")
