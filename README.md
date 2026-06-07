@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Télécharger les données Kaggle
-Téléchargez les jeux de données bruts depuis Kaggle via ces lien : (Food Delivery Time)[https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time], (Weather Data)[https://www.kaggle.com/datasets/muthuj7/weather-dataset]
+Téléchargez les jeux de données bruts depuis Kaggle via ces lien : [Food Delivery Time](https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time), [Weather Data](https://www.kaggle.com/datasets/muthuj7/weather-dataset)
 Placez les fichiers CSV téléchargés directement à la racine du projet.
 
 ### 5. Exécuter le Notebook (Étape Préalable Obligatoire)
@@ -63,4 +63,4 @@ streamlit run app.py
 Le dashboard s'ouvrira automatiquement à l'adresse locale `http://localhost:8501`.
 
 ## Prise de Décision et Mesure d'Impact
-Le rapport complet détaillant les recommandations stratégiques d'optimisation (routage dynamique prédictif, communication proactive, réduction de la zone de couverture) et le protocole expérimental complet (A/B Testing) est disponible dans le fichier `decisionTestImpact.md`.
+Le rapport complet détaillant les recommandations stratégiques d'optimisation (routage dynamique prédictif, communication proactive, réduction de la zone de couverture) et le protocole expérimental complet (A/B Testing) est disponible dans le fichier [decisionTestImpact.md](decisionTestImpact.md).
