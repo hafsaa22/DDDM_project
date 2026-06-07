@@ -1,18 +1,14 @@
-# Fichiers de données brutes et traitées (Très important pour GitHub)
 *.csv
 *.xlsx
 *.parquet
 data/
 
-# Fichiers temporaires Python et cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Fichiers temporaires Jupyter Notebook
 .ipynb_checkpoints/
 
-# Fichiers système
 .DS_Store
 Thumbs.db
